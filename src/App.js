@@ -8,6 +8,7 @@ import ContactFilter from './components/ContactFilter/ContactFilter';
 import shortid from 'shortid';
 
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class App extends Component {
   state = {
