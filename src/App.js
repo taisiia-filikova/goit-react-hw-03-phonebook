@@ -7,6 +7,8 @@ import ContactFilter from './components/ContactFilter/ContactFilter';
 
 import shortid from 'shortid';
 
+import { ToastContainer, toast } from 'react-toastify';
+
 class App extends Component {
   state = {
     contacts: [
@@ -32,16 +34,20 @@ class App extends Component {
         contact => contact.name.toLowerCase() === name.toLowerCase(),
       )
     ) {
-      alert(`${name} is already in contacts.`);
+      toast(`${name} is already in contacts.`);
     } else if (contacts.find(contact => contact.number === number)) {
-      alert(`${number} is already in contacts.`);
-    } else if (name === '' || number === '') {
-      alert('Enter the name and phone number!');
+      toast(`${number} is already in contacts.`);
+    } else if (name.trim() === '' || number.trim() === '') {
+      toast.info('Enter the name and phone number!');
     } else if (!/\d{3}[-]\d{2}[-]\d{2}/g.test(number)) {
-      alert('Enter the correct phone number!');
+      toast.error('Enter the correct phone number!');
     } else {
       this.setState(({ contacts }) => ({
-        contacts: [contact, ...contacts],
+        contacts: [contact, ...contacts].sort((a, b) => {
+          if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+          if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+          return 0;
+        }),
       }));
     }
   };
@@ -65,6 +71,24 @@ class App extends Component {
     );
   };
 
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const prevContacts = prevState.contacts;
+    const nextContacts = this.state.contacts;
+
+    if (nextContacts !== prevContacts) {
+      localStorage.setItem('contacts', JSON.stringify(nextContacts));
+    }
+  }
+
   render() {
     const { filter, contacts } = this.state;
     const visibleContacts = this.makeVisibleContacts();
@@ -84,6 +108,7 @@ class App extends Component {
         ) : (
           <p>There's nothing in your phonebook. Please add contact.</p>
         )}
+        <ToastContainer autoClose={3700} />
       </Container>
     );
   }
